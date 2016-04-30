@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Star Realms</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_learn_play">learnPlay</string>
+    <string name="title_activity_vsfriend">Play vs Friend</string>
+    <string name="title_activity_view_cards">View Cards</string>
+    <string name="title_activity_play">Play</string>
+    <string name="title_activity_winning">Winning</string>
+    <string name="title_activity_losing">Losing</string>
+</resources>

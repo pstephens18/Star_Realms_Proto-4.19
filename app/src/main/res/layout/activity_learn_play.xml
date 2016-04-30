@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@drawable/milky_way"
+    tools:context="edu.whitworth.test1.learnPlay">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="In order to win the game, you need to attack your opponent’s Authority using Combat, which can be generated with Ships and with Bases. Each player starts the game with 200 Authority. If you reduce your opponent’s Authority to zero, you win! Play your cards then buy more cards from the trade row. Hold your finger over a card to view it&apos;s stats. You can attack your opponent by tapping on their Authority."
+        android:id="@+id/textView16"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:textColor="#ffffff"
+        android:textSize="20dp" />
+</RelativeLayout>

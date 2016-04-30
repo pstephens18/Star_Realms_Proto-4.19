@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer-array name="imgs">
+        <item>@drawable/ram3</item>
+        <item>@drawable/tradepod2</item>
+        <item>@drawable/battlepod2</item>
+        <item>@drawable/blobcarrier6</item>
+        <item>@drawable/blobdestroyer4</item>
+        <item>@drawable/battleblob6</item>
+        <item>@drawable/blob_fighter1</item>
+        <item>@drawable/blobcarrier6</item>
+        <item>@drawable/blobdestroyer4</item>
+        <item>@drawable/explorer2</item>
+        <item>@drawable/mothership7</item>
+    </integer-array>
+
+    <string-array name="names">
+        <item>Ram</item>
+        <item>Trade pod</item>
+        <item>Battle pod</item>
+        <item>Blob carrier</item>
+        <item>Blob destroyer</item>
+        <item>Battle blob</item>
+        <item>Blob fighter</item>
+        <item>Blob carrier</item>
+        <item>Blob destroyer</item>
+        <item>Explorer</item>
+        <item>Mothership</item>
+    </string-array>
+
+
+</resources>
