@@ -108,7 +108,5 @@ public class MainActivity extends ActionBarActivity {
         //testCards.push().setValue(blob);
         //testCards.push().setValue(fighter);
 
-        Intent intent = new Intent(this, viewCards.class);
-        startActivity(intent);
     }
 }

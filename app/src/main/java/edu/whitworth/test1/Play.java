@@ -1,31 +1,35 @@
 package edu.whitworth.test1;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.TextView;
 
-import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Random;
 import java.util.Vector;
 
 public class Play extends ActionBarActivity
 {
+    public SQLiteDatabase user;
     public int opponentAuthority;
-    public int userAuthority;
     public int[] hand = new int[5];
     public int[] trade = new int[6];
     public long[] stats = new long[3];  // Not being utilized yet
     public int[] useablePoints = new int[3]; // Holds current trade, combat, and authority in that order
     public Vector<Card> myCards = new Vector<>();
     boolean canBuyCard;
+    boolean won = false;
+    boolean lost = false;
 
     class Card extends Play
     {
@@ -149,7 +153,10 @@ public class Play extends ActionBarActivity
     }
 
     public void quit(View view) {
+        // Quiting counts as a loss
+        if(won == false && lost == false){lose();}
 
+        /*
         Firebase.setAndroidContext(this);
         Firebase myFirebaseRef = new Firebase("https://popping-torch-1994.firebaseio.com/");
         myFirebaseRef.child("message").setValue("Play Message.");
@@ -164,20 +171,74 @@ public class Play extends ActionBarActivity
             public void onCancelled(FirebaseError error) {
             }
         });
+        */
+
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
 
     public void win()
     {
-        Intent intent = new Intent(this, Winning.class);
-        startActivity(intent);
+        // Tell the User they Won
+        TextView winning = (TextView) findViewById(R.id.textView3);
+        winning.setVisibility(View.VISIBLE);
+
+        // Update the number of Wins
+        user = openOrCreateDatabase("Wins", Context.MODE_PRIVATE, null);
+        user.execSQL("CREATE TABLE IF NOT EXISTS Wins(Wins VARCHAR);");
+
+        Cursor c = user.rawQuery("SELECT * FROM Wins", null);
+        StringBuffer buffer2 = new StringBuffer();
+
+        while (c.moveToNext()) {
+            buffer2.append(c.getString(0));
+        }
+
+
+        int j =0;
+        try
+        {
+            int i= NumberFormat.getInstance().parse(buffer2.toString()).intValue();
+            i++;
+            j = i;
+        }
+        catch (ParseException e) {}
+
+        user.execSQL("UPDATE Wins SET Wins = '" +j+ "'");
+
+        user.close();
+
     }
 
     public void lose()
     {
-        Intent intent = new Intent(this, Losing.class);
-        startActivity(intent);
+        // Tell the User that they lost
+        TextView lossing = (TextView) findViewById(R.id.textView9);
+        lossing.setVisibility(View.VISIBLE);
+
+
+        // Update the number of loses
+        user = openOrCreateDatabase("Loss", Context.MODE_PRIVATE, null);
+
+        Cursor c = user.rawQuery("SELECT * FROM Loss", null);
+        StringBuffer buffer2 = new StringBuffer();
+
+        while (c.moveToNext()) {
+            buffer2.append(c.getString(0));
+        }
+
+        int j =0;
+        try
+        {
+            int i= NumberFormat.getInstance().parse(buffer2.toString()).intValue();
+            i++;
+            j = i;
+        }
+        catch (ParseException e) {}
+
+        user.execSQL("UPDATE Loss SET Loss = '" + j + "'");
+
+        user.close();
     }
 
     public void initViews() {
@@ -273,10 +334,17 @@ public class Play extends ActionBarActivity
         Random rand = new Random();
         for(int i =0; i<11;i++)
         {
-            deck[i].combat = rand.nextInt(2)+1;
-            deck[i].authority = rand.nextInt(2);
-            deck[i].trade = rand.nextInt(2)+1;
-            deck[i].cost = rand.nextInt(10)+1;
+            if(i == 0 || i == 2 || i==4 || i == 5 || i ==6 || i ==10 || i == 9 || i ==8  ){deck[i].combat = rand.nextInt(3)+1;}
+            else{ deck[i].combat = 1;}
+
+            if(i == 3 || i == 10){deck[i].authority = rand.nextInt(3)+1;}
+            else{deck[i].authority = 0;}
+
+            if(i == 0 || i == 2 || i==4 || i == 5 || i ==6 || i ==10 || i == 9 || i ==8){ deck[i].trade = rand.nextInt(2)+1;}
+            else{deck[i].trade = rand.nextInt(4)+1;}
+
+
+            deck[i].cost = deck[i].combat + (deck[i].trade / 2) + deck[i].authority;
             deck[i].background = i;
         }
 
@@ -299,6 +367,7 @@ public class Play extends ActionBarActivity
     // This function is not yet being used
     public void getStats(View view)
     {
+        /*
         Firebase.setAndroidContext(this);
         final Firebase myFirebaseRef = new Firebase("https://popping-torch-1994.firebaseio.com/");
 
@@ -314,6 +383,7 @@ public class Play extends ActionBarActivity
                 System.out.println("The read failed: " + firebaseError.getMessage());
             }
         });
+        */
     }
 
     public void playCard(View view)
@@ -322,7 +392,7 @@ public class Play extends ActionBarActivity
         TypedArray imgs = res.obtainTypedArray(R.array.imgs);
         if(view.getBackground() == null){return;}
 
-        // find Card and transfer points
+        // find Card by comparing the background to a stored array of drawables and transfer points to the user
         for(int i=0;i<11;i++) {
             if (view.getBackground().getConstantState() == getDrawable(imgs.getResourceId(i, 0)).getConstantState()) {
                 System.out.println("The drawable was found");
@@ -333,10 +403,11 @@ public class Play extends ActionBarActivity
                 syncCloud(view);
             }
         }
-        view.setBackgroundResource(0); // Remove Background
+        // Remove Background so the card cannot be played again
+        view.setBackgroundResource(0);
         System.out.print(useablePoints[0] + useablePoints[1] + useablePoints[2]);
 
-
+        // Update the stats show to the User
         TextView combat = (TextView)findViewById(R.id.textView13);
         combat.setText("Combat: " + String.valueOf(useablePoints[1]));
 
@@ -347,6 +418,7 @@ public class Play extends ActionBarActivity
         authority.setText("Authority: " + String.valueOf(useablePoints[2]));
     }
 
+    // not currently a neccesary function
     public void syncCloud(View view)
     {
         Firebase.setAndroidContext(this);
@@ -368,16 +440,20 @@ public class Play extends ActionBarActivity
         TypedArray imgs = res.obtainTypedArray(R.array.imgs);
         TextView showStats1 = (TextView) findViewById(R.id.textView17);
         TextView showStats2 = (TextView) findViewById(R.id.textView18);
+        TextView showStats3 = (TextView) findViewById(R.id.textView23);
 
         // Search for a card with a matching background
         for(int i=0;i<11;i++) {
             if(view.getBackground().getConstantState() == getDrawable(imgs.getResourceId(i, 0)).getConstantState()) {
+
                 // Output the stats of the card with the same background
-                showStats1.setText(deck[i].name + ": Cost = "  + String.valueOf(deck[i].cost) + ", Trade = "  + String.valueOf(deck[i].trade));
-                showStats2.setText("Combat = " + String.valueOf(deck[i].combat) + ", Authority = " + String.valueOf(deck[i].authority));
-                //showStats.setText("It works.");
+                showStats1.setText(deck[i].name + ":");
+                showStats2.setText("Cost = " + String.valueOf(deck[i].cost) + ",          Trade = " + String.valueOf(deck[i].trade));
+                showStats3.setText("Combat = " + String.valueOf(deck[i].combat) + ",     Authority = " + String.valueOf(deck[i].authority));
+
             }
         }
+        // This boolean makes sure that the card is not bought with a long press
         canBuyCard = false;
     }
 
@@ -417,7 +493,8 @@ public class Play extends ActionBarActivity
         for(int i=0;i<11;i++) {
             if(view.getBackground().getConstantState() == getDrawable(imgs.getResourceId(i, 0)).getConstantState()) {
                 if(useablePoints[0] >= deck[i].cost)
-                { // Add Card to hand and decrement trade
+                {
+                // Add Card to hand and decrement trade
                     myCards.addElement(deck[i]);
                     useablePoints[0] -= deck[i].cost;
                     String s = "Trade: " + String.valueOf(useablePoints[0]);
@@ -454,11 +531,12 @@ public class Play extends ActionBarActivity
 
     public void nextRound(View view)
     {
+        if(lost || won ){return;}
         Random rand = new Random();
         Resources res = getResources();
         TypedArray imgs = res.obtainTypedArray(R.array.imgs);
 
-        // Randomly take a card out of the trade row for the NPC
+        // Randomly take a card out of the trade row to simulate the Opposing Player
         findViewById(trade[rand.nextInt(6)]).setBackgroundResource(0);
 
         // Generate new Cards to fill the trade row
@@ -471,7 +549,7 @@ public class Play extends ActionBarActivity
 
         // Decrease User Authority by a random amount then output to view
         TextView uA = (TextView) findViewById(R.id.textView12);
-        int newAuthority = useablePoints[2] -= (rand.nextInt(11)+10);
+        int newAuthority = useablePoints[2] -= (rand.nextInt(10)+10);
         String userAuthority = String.valueOf(newAuthority);
         userAuthority = "Authority: " + userAuthority;
         uA.setText(userAuthority);
@@ -480,12 +558,13 @@ public class Play extends ActionBarActivity
         changeCard(view);
 
         // Check for winner
-        if(opponentAuthority <= 0){win();}
-        if(useablePoints[2] <= 0){lose();}
+        if(opponentAuthority <= 0 && won == false){win(); won = true;}
+        else if(useablePoints[2] <= 0 && lost == false){lose(); lost = true;}
     }
 
     public void playAll(View view)
     {
+        // Plays all the Cards in the user's hand
         for(int i =0;i<5;i++)
         {
             playCard(findViewById(hand[i]));
